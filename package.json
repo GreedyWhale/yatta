@@ -28,8 +28,14 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "@biomejs/biome",
+      "@tailwindcss/oxide",
       "esbuild",
       "spawn-sync"
     ]
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "gsap": "^3.13.0",
+    "tailwindcss": "^4.1.8"
   }
 }
