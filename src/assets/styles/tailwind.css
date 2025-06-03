@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@theme {
+  /* fontFamily */
+  --font-Xiaolai: 'XiaolaiMonoSC-Regular';
+  --font-amaticSC: 'AmaticSC-Regular', 'AmaticSC-Bold';
+  /* color */
+  --color-primary: #2a8e8e;
+}

@@ -6,10 +6,10 @@
  * @LastEditTime: 2025-05-30 10:47:23
  */
 import { mount } from 'svelte';
+import '~/assets/styles/global.scss';
 import '~/assets/styles/tailwind.css';
 
 import App from './App.svelte';
-import './index.css';
 
 const app = mount(App, {
   target: document.getElementById('app') as HTMLDivElement,
