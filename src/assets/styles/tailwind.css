@@ -3,7 +3,8 @@
 @theme {
   /* fontFamily */
   --font-Xiaolai: 'XiaolaiMonoSC-Regular';
-  --font-amaticSC: 'AmaticSC-Regular', 'AmaticSC-Bold';
+  --font-SpaceGrotesk: 'SpaceGrotesk';
+  --font-Fredericka_the_Great: 'Fredericka_the_Great';
   /* color */
   --color-primary: #2a8e8e;
 }

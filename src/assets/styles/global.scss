@@ -7,21 +7,21 @@
 }
 
 @font-face {
-  font-family: 'AmaticSC-Regular';
-  src: url('~/assets/fonts/Amatic_SC/AmaticSC-Regular.ttf');
+  font-family: 'SpaceGrotesk';
+  src: url('~/assets/fonts/Space_Grotesk/SpaceGrotesk-VariableFont_wght.ttf');
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: 'Fredericka_the_Great';
+  src: url('~/assets/fonts/Fredericka_the_Great/FrederickatheGreat-Regular.ttf');
   font-style: normal;
   font-display: swap;
   font-weight: 400;
 }
 
-@font-face {
-  font-family: 'AmaticSC-Bold';
-  src: url('~/assets/fonts/Amatic_SC/AmaticSC-Bold.ttf');
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-}
-
 body {
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: SpaceGrotesk, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
