@@ -4,14 +4,21 @@
   import addIcon from '~/assets/images/add-line.svg';
   import arrowLeftIcon from '~/assets/images/arrow-left-circle-fill.svg';
   import arrowRightIcon from '~/assets/images/arrow-right-circle-fill.svg';
+  import pushpin from '~/assets/images/pushpin-line.svg';
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const dateFormat = 'yyyy-MM-dd';
 
   let selectedDate = $state('');
   let date = $state(new Date());
-  const currentMouth = $derived(format(date, 'MMMM'));
-  const currentYear = $derived(format(date, 'yyyy'));
-  const currentDay = $derived(format(date, 'dd'));
-  const currentWeek = $derived(format(date, 'eeee'));
+  const currentDate = $derived.by(() => {
+    const _date = selectedDate || date;
+    return {
+      month: format(_date, 'MMMM'),
+      year: format(_date, 'yyyy'),
+      day: format(_date, 'dd'),
+      week: format(_date, 'eeee'),
+    }
+  });
   const datePanel = $derived(getCalendarDays(date.getFullYear(), date.getMonth()));
 
   function getCalendarDays(year: number, month: number) {
@@ -25,7 +32,7 @@
       days.push({
         day: prevMonthLastDay - i,
         monthOffset: -1,
-        date: format(new Date(year, month - 1, prevMonthLastDay - i), 'yyyy-MM-dd')
+        date: format(new Date(year, month - 1, prevMonthLastDay - i), dateFormat)
       });
     }
     // 本月
@@ -33,7 +40,7 @@
       days.push({
         day: i,
         monthOffset: 0,
-        date: format(new Date(year, month, i), 'yyyy-MM-dd')
+        date: format(new Date(year, month, i), dateFormat)
       });
     }
     // 下月补齐
@@ -41,7 +48,7 @@
       days.push({
         day: days.length - (firstDay + lastDay) + 1,
         monthOffset: 1,
-        date: format(new Date(year, month + 1, days.length - (firstDay + lastDay) + 1), 'yyyy-MM-dd')
+        date: format(new Date(year, month + 1, days.length - (firstDay + lastDay) + 1), dateFormat)
       });
     }
     return days;
@@ -53,9 +60,19 @@
   }
 
   function isCurrentDay(date: string) {
-    return format(new Date(), 'yyyy-MM-dd') === date;
+    return format(new Date(), dateFormat) === date;
+  }
+
+  function selectDate (dateInfo: typeof datePanel[number]) {
+    selectedDate = selectedDate === dateInfo.date ? '' : dateInfo.date;
+  }
+
+  function backToToday() {
+    selectedDate = format(new Date(), dateFormat);
+    date = new Date();
   }
 </script>
+
 
 <div class="p-12">
   <div class="mb-8">
@@ -67,14 +84,19 @@
   <div class="flex">
     <div class="flex-none w-[35%]">
       <div class="text-5xl mb-4">
-        <span>{currentMouth}</span>
-        <span class="text-gray-500">{currentYear}</span>
+        <span>{currentDate.month}</span>
+        <span class="text-gray-500">{currentDate.year}</span>
       </div>
-      <div class="text-7xl mb-4 font-Fredericka_the_Great">{currentDay}</div>
-      <div class="text-5xl">{currentWeek}</div>
+      <div class="text-7xl mb-4 font-Fredericka_the_Great">{currentDate.day}</div>
+      <div class="text-5xl">{currentDate.week}</div>
     </div>
     <div class="flex-1 mt-8">
       <div class="flex items-center justify-end mb-8">
+        <button
+          class="cursor-pointer mr-8 text-lg"
+          onclick={backToToday}>
+          Back To Today
+        </button>
         <button class="cursor-pointer" onclick={() => changeMonth('prev')}>
           <img src={arrowLeftIcon} alt="Arrow left" class="w-8 h-8 mr-4">
         </button>
@@ -90,23 +112,26 @@
       </ol>
 
       <ol class="grid grid-cols-7 grid-rows-6 text-lg border-b border-r border-gray-500">
-        {#each datePanel as date}
-          <li>
+        {#each datePanel as item}
+          <li class="relative">
             <button
-              onclick={() => selectedDate = date.date}
+              onclick={() => selectDate(item)}
               class={clsx(
                 "flex items-start justify-start w-full p-2 cursor-pointer h-22 border-t border-l border-gray-500",
-                date.monthOffset === 0 ? "text-black" : "text-gray-500",
+                item.monthOffset === 0 ? "text-black" : "text-gray-500",
               )}
             >
               <span
                 class={clsx(
                   "relative",
-                  isCurrentDay(date.date) && 'after:content-[""] after:absolute after:left-0 after:top-full after:w-8 after:h-[2px] after:bg-primary'
+                  isCurrentDay(item.date) && 'after:content-[""] after:absolute after:left-0 after:top-full after:w-8 after:h-[2px] after:bg-primary',
                 )}
               >
-                {date.day}
+                {item.day}
               </span>
+              {#if selectedDate === item.date}
+                <img src={pushpin} alt="pin" class="absolute bottom-2 right-2 w-4 h-4">
+              {/if}
             </button>
           </li>
         {/each}
