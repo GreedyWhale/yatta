@@ -1,6 +1,6 @@
 <script lang="ts">
   import { clsx } from 'clsx';
-  import { format } from 'date-fns';
+  import { format, isAfter } from 'date-fns';
   import addIcon from '~/assets/images/add-line.svg';
   import arrowLeftIcon from '~/assets/images/arrow-left-circle-fill.svg';
   import arrowRightIcon from '~/assets/images/arrow-right-circle-fill.svg';
@@ -20,6 +20,13 @@
     }
   });
   const datePanel = $derived(getCalendarDays(date.getFullYear(), date.getMonth()));
+  const canCreate = $derived.by(() => {
+    if (selectedDate) {
+      return !isAfter(new Date(selectedDate), new Date());
+    }
+
+    return true;
+  });
 
   function getCalendarDays(year: number, month: number) {
     const days: { day: number, monthOffset: -1 | 0 | 1, date: string; }[] = [];
@@ -76,7 +83,12 @@
 
 <div class="p-12">
   <div class="mb-8">
-    <button class="font-bold flex items-center cursor-pointer ml-auto py-2 px-4 text-md border border-primary rounded-4xl text-primary">
+    <button
+      class={clsx(
+        "font-bold flex items-center cursor-pointer ml-auto py-2 px-4 text-md border border-primary rounded-4xl text-primary",
+        !canCreate && "opacity-50 cursor-not-allowed"
+      )}
+    >
       <img src={addIcon} alt="Add diary" class="w-4 h-4 mr-2">
       Create
     </button>
