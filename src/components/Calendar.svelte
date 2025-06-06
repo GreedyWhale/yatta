@@ -1,10 +1,20 @@
 <script lang="ts">
   import { clsx } from 'clsx';
   import { format, isAfter } from 'date-fns';
+
   import addIcon from '~/assets/images/add-line.svg';
   import arrowLeftIcon from '~/assets/images/arrow-left-circle-fill.svg';
   import arrowRightIcon from '~/assets/images/arrow-right-circle-fill.svg';
   import pushpin from '~/assets/images/pushpin-line.svg';
+
+  import { addToast } from '~/store';
+
+  interface Props {
+    onCreate: (date: string) => void;
+  }
+
+  let { onCreate } = $props();
+
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const dateFormat = 'yyyy-MM-dd';
 
@@ -78,6 +88,19 @@
     selectedDate = format(new Date(), dateFormat);
     date = new Date();
   }
+
+  function createDiary() {
+    if (!canCreate) {
+      addToast({
+        message: 'You are attempting to create a journal entry from the future. We cannot allow you to tamper with the timeline.',
+        type: 'error'
+      });
+
+      return;
+    }
+
+    onCreate(selectedDate || format(date, dateFormat));
+  }
 </script>
 
 
@@ -88,9 +111,10 @@
         "font-bold flex items-center cursor-pointer ml-auto py-2 px-4 text-md border border-primary rounded-4xl text-primary",
         !canCreate && "opacity-50 cursor-not-allowed"
       )}
+      onclick={createDiary}
     >
       <img src={addIcon} alt="Add diary" class="w-4 h-4 mr-2">
-      Create
+      Create a diary
     </button>
   </div>
   <div class="flex">
