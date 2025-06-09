@@ -2,10 +2,11 @@
   import { clsx } from 'clsx';
   import { format, isAfter } from 'date-fns';
 
-  import addIcon from '~/assets/images/add-line.svg';
+import addIcon from '~/assets/images/add-line.svg';
   import arrowLeftIcon from '~/assets/images/arrow-left-circle-fill.svg';
   import arrowRightIcon from '~/assets/images/arrow-right-circle-fill.svg';
   import pushpin from '~/assets/images/pushpin-line.svg';
+    import Button from '~/components/Button.svelte';
 
   import { addToast } from '~/store';
 
@@ -13,13 +14,14 @@
     onCreate: (date: string) => void;
   }
 
-  let { onCreate } = $props();
+  let { onCreate }: Props = $props();
 
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const dateFormat = 'yyyy-MM-dd';
 
   let selectedDate = $state('');
   let date = $state(new Date());
+
   const currentDate = $derived.by(() => {
     const _date = selectedDate || date;
     return {
@@ -104,74 +106,69 @@
 </script>
 
 
-<div class="p-12">
-  <div class="mb-8">
-    <button
-      class={clsx(
-        "font-bold flex items-center cursor-pointer ml-auto py-2 px-4 text-md border border-primary rounded-4xl text-primary",
-        !canCreate && "opacity-50 cursor-not-allowed"
-      )}
-      onclick={createDiary}
-    >
-      <img src={addIcon} alt="Add diary" class="w-4 h-4 mr-2">
-      Create a diary
-    </button>
-  </div>
-  <div class="flex">
-    <div class="flex-none w-[35%]">
-      <div class="text-5xl mb-4">
-        <span>{currentDate.month}</span>
-        <span class="text-gray-500">{currentDate.year}</span>
-      </div>
-      <div class="text-7xl mb-4 font-Fredericka_the_Great">{currentDate.day}</div>
-      <div class="text-5xl">{currentDate.week}</div>
+<div class="mb-8">
+  <Button
+    disabled={!canCreate}
+    onclick={createDiary}
+    icon="add"
+  >
+    Create a diary
+  </Button>
+</div>
+<div class="flex">
+  <div class="flex-none w-[35%]">
+    <div class="text-5xl mb-4">
+      <span>{currentDate.month}</span>
+      <span class="text-gray-500">{currentDate.year}</span>
     </div>
-    <div class="flex-1 mt-8">
-      <div class="flex items-center justify-end mb-8">
-        <button
-          class="cursor-pointer mr-8 text-lg"
-          onclick={backToToday}>
-          Back To Today
-        </button>
-        <button class="cursor-pointer" onclick={() => changeMonth('prev')}>
-          <img src={arrowLeftIcon} alt="Arrow left" class="w-8 h-8 mr-4">
-        </button>
-        <button class="cursor-pointer" onclick={() => changeMonth('next')}>
-          <img src={arrowRightIcon} alt="Arrow right" class="w-8 h-8">
-        </button>
-      </div>
+    <div class="text-7xl mb-4 font-Fredericka_the_Great">{currentDate.day}</div>
+    <div class="text-5xl">{currentDate.week}</div>
+  </div>
+  <div class="flex-1 mt-8">
+    <div class="flex items-center justify-end mb-8">
+      <button
+        class="cursor-pointer mr-8 text-lg"
+        onclick={backToToday}>
+        Back To Today
+      </button>
+      <button class="cursor-pointer" onclick={() => changeMonth('prev')}>
+        <img src={arrowLeftIcon} alt="Arrow left" class="w-8 h-8 mr-4">
+      </button>
+      <button class="cursor-pointer" onclick={() => changeMonth('next')}>
+        <img src={arrowRightIcon} alt="Arrow right" class="w-8 h-8">
+      </button>
+    </div>
 
-      <ol class="flex items-center text-2xl mb-8">
-        {#each days as day }
-          <li class="flex-1 text-center">{day}</li>
-        {/each}
-      </ol>
+    <ol class="flex items-center text-2xl mb-8">
+      {#each days as day }
+        <li class="flex-1 text-center">{day}</li>
+      {/each}
+    </ol>
 
-      <ol class="grid grid-cols-7 grid-rows-6 text-lg border-b border-r border-gray-500">
-        {#each datePanel as item}
-          <li class="relative">
-            <button
-              onclick={() => selectDate(item)}
+    <ol class="grid grid-cols-7 grid-rows-6 text-lg border-b border-r border-gray-500">
+      {#each datePanel as item}
+        <li class="relative">
+          <button
+            onclick={() => selectDate(item)}
+            class={clsx(
+              "flex items-start justify-start w-full p-2 cursor-pointer h-22 border-t border-l border-gray-500",
+              item.monthOffset === 0 ? "text-black" : "text-gray-500",
+            )}
+          >
+            <span
               class={clsx(
-                "flex items-start justify-start w-full p-2 cursor-pointer h-22 border-t border-l border-gray-500",
-                item.monthOffset === 0 ? "text-black" : "text-gray-500",
+                "relative",
+                isCurrentDay(item.date) && 'after:content-[""] after:absolute after:left-0 after:top-full after:w-8 after:h-[2px] after:bg-primary',
               )}
             >
-              <span
-                class={clsx(
-                  "relative",
-                  isCurrentDay(item.date) && 'after:content-[""] after:absolute after:left-0 after:top-full after:w-8 after:h-[2px] after:bg-primary',
-                )}
-              >
-                {item.day}
-              </span>
-              {#if selectedDate === item.date}
-                <img src={pushpin} alt="pin" class="absolute bottom-2 right-2 w-4 h-4">
-              {/if}
-            </button>
-          </li>
-        {/each}
-      </ol>
-    </div>
+              {item.day}
+            </span>
+            {#if selectedDate === item.date}
+              <img src={pushpin} alt="pin" class="absolute bottom-2 right-2 w-4 h-4">
+            {/if}
+          </button>
+        </li>
+      {/each}
+    </ol>
   </div>
 </div>
