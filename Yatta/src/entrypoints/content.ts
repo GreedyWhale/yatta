@@ -1,6 +1,14 @@
+import type { Message } from '~/types/message.d.ts';
+
 export default defineContentScript({
   matches: ['<all_urls>'],
   main() {
-    console.log('Hello content.');
+    browser.runtime.onMessage.addListener((message: Message) => {
+      handleSaveSection(message)
+    });
   },
 });
+
+function handleSaveSection(message: Message) {
+  console.log('Save selection.', message);
+}
