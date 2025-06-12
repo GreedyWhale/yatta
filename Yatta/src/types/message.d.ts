@@ -1,4 +1,10 @@
 export interface Message {
   menuId: string | number;
-  payload: string;
+  payload: {
+    pageInfo: {
+      url: string;
+      title: string;
+    };
+    content: string;
+  };
 }

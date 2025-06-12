@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@layer components {
+  .scroll-area {
+    @apply overflow-auto;
+    scrollbar-width: thin;
+    scrollbar-color: #69799d transparent; /* thumb, track */
+  }
+}

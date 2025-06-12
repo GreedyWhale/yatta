@@ -14,7 +14,7 @@ export default defineBackground(() => {
 function createContextMenu() {
   browser.contextMenus.create({
     id: MENU_ID_SELECTION,
-    title: 'Yatta: ✍️ 保存选中文本',
+    title: 'Yatta - ✍️ 保存选中文本',
     type: 'normal',
     contexts: ['selection'],
   });
@@ -34,7 +34,13 @@ async function handleSelection(info: Browser.contextMenus.OnClickData, tab?: Bro
 
   const message: Message = {
     menuId: MENU_ID_SELECTION,
-    payload: info.selectionText,
+    payload: {
+      pageInfo: {
+        url: _tab.url || '',
+        title: _tab.title || '',
+      },
+      content: info.selectionText,
+    },
   }
 
   browser.tabs.sendMessage(_tab.id, message);
