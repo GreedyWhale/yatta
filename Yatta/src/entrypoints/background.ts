@@ -1,4 +1,4 @@
-import type { Message } from '~/types/message.d.ts';
+import type { Message } from '@/types';
 
 export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(() => {

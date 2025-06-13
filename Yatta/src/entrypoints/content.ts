@@ -1,8 +1,8 @@
-import type { Message } from '~/types/message.d.ts';
+import type { Message } from '@/types';
 
 import { mount, unmount } from 'svelte';
 import Dialog from '~/lib/Dialog.svelte';
-import '~/assets/styles/tailwindcss.css';
+import '~/assets/styles/tailwindcss-global.css';
 import '~/assets/styles/save-dialog.scss';
 
 export default defineContentScript({
