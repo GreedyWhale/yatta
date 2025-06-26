@@ -3,10 +3,10 @@
   import type { Tag } from '~/utils/db';
 
   import { format } from 'date-fns';
-  import { clsx } from 'clsx';
   import { liveQuery } from "dexie";
 
   import { db } from '~/utils/db';
+  import deleteIcon from '~/assets/icons/close-line.svg';
 
   interface Props {
     message: Message;
@@ -33,63 +33,81 @@
   });
 </script>
 
-<div class="fixed inset-0 bg-black/30 z-1 flex items-start justify-center pt-[10vh]">
-  <div class="rounded-xl p-4 backdrop-blur-md bg-[rgba(255,245,230,0.6)] text-[#333] shadow-md w-[40%] border border-white/40">
-    <h3 class="text-lg font-bold mb-4 pb-4 border-b border-[#f0f0f0] flex items-center justify-between">
+<div class="dialog-overlay">
+  <div class="dialog-container">
+    <h3 class="dialog-header">
       Yatta - ✍️ 保存选中文本
     </h3>
     <div>
-      <ul class="font-md font-medium mb-8">
-        <li class="flex items-center mb-4">
-          <span class="mr-4">📅</span>
+      <ul class="dialog-list">
+        <li class="dialog-list-item">
+          <span class="dialog-list-item-content">📅</span>
           <span>{datasource.createdAt}</span>
         </li>
-        <li class="flex items-center mb-4">
-          <span class="mr-4">🌐</span>
-          <span title={datasource.payload.pageInfo.title} class="line-clamp-1">{datasource.payload.pageInfo.title}</span>
+        <li class="dialog-list-item">
+          <span class="dialog-list-item-content">🌐</span>
+          <span title={datasource.payload.pageInfo.title} class="dialog-link">{datasource.payload.pageInfo.title}</span>
         </li>
-        <li class="flex items-center mb-4">
-          <span class="mr-4">🔗</span>
-          <a href={datasource.payload.pageInfo.url} target="_blank" class=" underline-offset-2 line-clamp-1 hover:underline">
+        <li class="dialog-list-item">
+          <span class="dialog-list-item-content">🔗</span>
+          <a href={datasource.payload.pageInfo.url} target="_blank" class="dialog-link">
             {datasource.payload.pageInfo.url}
           </a>
         </li>
-        <li class="flex items-start mb-8">
-          <span class="mr-4">✒️</span>
-          <p class="max-h-[100px] overflow-y-auto text-[#8a2be2] leading-[1.75] italic scroll-area">
+        <li class="dialog-list-item">
+          <span class="dialog-list-item-content">✒️</span>
+          <p class="dialog-content">
             {datasource.payload.content}
           </p>
         </li>
-        <li class="flex items-start mb-4">
-          <span class="mr-4">🏷️</span>
-          <div class="border-b border-[#f0f0f0] w-full relative text-sm">
+        <li class="dialog-tags">
+          <span class="dialog-list-item-content">🏷️</span>
+          <div class="dialog-tag-input-wrapper">
+            {#if selectedTags.length > 0}
+              {#each selectedTags as tag}
+                <span class="dialog-tag-selected">
+                  {tag.name}
+                  <button
+                    class="dialog-tag-remove"
+                    onclick={() => {
+                      selectedTags = selectedTags.filter(t => t.name !== tag.name);
+                    }}
+                  >
+                    <img src={deleteIcon} alt="delete tag">
+                  </button>
+                </span>
+              {/each}
+            {/if}
             <input
               name="label"
               type="text"
               placeholder="请选择或输入标签，比如: 灵感, 收藏, 待办"
-              class="h-6 outline-none block w-full"
+              class="dialog-tag-input"
               onfocus={() => isOpened = true}
               onblur={() => isOpened = false}
               oninput={(e) => inputValue = (e.target as HTMLInputElement).value}
+              onclick={() => {
+                if (!isOpened) {
+                  isOpened = true;
+                }
+              }}
             >
             <ul
-              class={clsx(
-                "origin-top scale-y-0 absolute top-full left-0 w-full max-h-[100px] overflow-y-auto scroll-area transition-all bg-white shadow rounded py-2",
-                isOpened && 'scale-y-100'
-              )}
+              class="dialog-tag-list {isOpened ? 'opened' : ''}"
             >
               {#if displayTags}
                 {#each displayTags as tag}
-                  <li
-                    class="h-8 leading-8 cursor-pointer px-2 hover:bg-[#f0f0f0]"
-                  >
+                  <li class="dialog-tag-list-item">
                     <button
-                      onclick={() => {
+                      onmousedown={(event) => {
+                        event.preventDefault(); // 防止 input 失焦
+                        event.stopPropagation();
                         selectedTags = [...selectedTags, tag];
                         inputValue = '';
+                        isOpened = false;
                       }}
                     >
-                      {tag.name}
+                      # {tag.name}
                     </button>
                   </li>
                 {/each}
@@ -99,15 +117,215 @@
         </li>
       </ul>
 
-      <div class="flex items-center justify-end">
+      <div class="dialog-footer">
         <button
           onclick={onClose}
-          class="cursor-pointer rounded mr-4 px-6 py-2 text-[#78716c] transition-all hover:bg-[rgba(120,113,108,0.14)]"
+          class="dialog-btn-cancel"
         >
           取消
         </button>
-        <button class="cursor-pointer rounded px-6 py-2 text-black hover:bg-[rgba(22,163,74,0.18)]">保存</button>
+        <button class="dialog-btn-save">保存</button>
       </div>
     </div>
   </div>
 </div>
+
+<style lang="scss">
+/* 由于 shadowDOM 中 rem 会找到宿主页面的html元素，所以这里不用 tailwindcss */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+}
+
+.dialog-container {
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 245, 230, 0.6);
+  color: #333;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  width: 40%;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+.dialog-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-list {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 32px;
+  list-style: none;
+  padding: 0;
+}
+
+.dialog-list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dialog-list-item-content {
+  margin-right: 16px;
+}
+
+.dialog-link {
+  text-underline-offset: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  transition: text-decoration 0.2s;
+  text-decoration: none;
+  color: #333;
+}
+
+a.dialog-link:hover {
+  text-decoration: underline;
+  color: #1e40af;
+}
+
+.dialog-content {
+  max-height: 100px;
+  overflow-y: auto;
+  color: #8a2be2;
+  line-height: 1.75;
+  font-style: italic;
+}
+
+.dialog-tags {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.dialog-tag-input-wrapper {
+  border-bottom: 1px solid #f0f0f0;
+  width: 100%;
+  position: relative;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.dialog-tag-selected {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  background-color: rgb(211 205 205 / 60%);
+  margin: 2px;
+  padding: 4px;
+  > button {
+    background-color: transparent;
+    border: none;
+    margin-left: 5px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    > img {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.dialog-tag-input {
+  height: 28px;
+  outline: none;
+  display: block;
+  flex: 1;
+  border: none;
+  background: transparent;
+}
+
+.dialog-tag-list {
+  transform: scaleY(0);
+  transform-origin: top;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 100px;
+  overflow-y: auto;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 6px;
+  padding: 8px;
+  transition: transform 0.2s;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  &.opened {
+    transform: scaleY(1);
+  }
+}
+
+.dialog-tag-list-item {
+  > button {
+    height: 32px;
+    line-height: 32px;
+    cursor: pointer;
+    padding: 0 8px;
+    border: none;
+    background-color: transparent;
+    color: #c41d7f;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+    &:hover {
+      background: #f0f0f0;
+    }
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.dialog-btn-cancel {
+  cursor: pointer;
+  border-radius: 6px;
+  margin-right: 16px;
+  padding: 8px 24px;
+  color: #78716c;
+  transition: background 0.2s;
+  background: transparent;
+  border: none;
+  &:hover {
+    background: rgba(120,113,108,0.14);
+  }
+}
+
+.dialog-btn-save {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 8px 24px;
+  color: #000;
+  background: transparent;
+  border: none;
+  transition: background 0.2s;
+  &:hover {
+    background: rgba(22,163,74,0.18);
+  }
+}
+</style>
+

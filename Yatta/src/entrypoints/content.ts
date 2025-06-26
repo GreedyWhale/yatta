@@ -2,7 +2,6 @@ import type { Message } from '@/types';
 
 import { mount, unmount } from 'svelte';
 import Dialog from '~/lib/Dialog.svelte';
-import '~/assets/styles/tailwindcss-global.css';
 import '~/assets/styles/save-dialog.scss';
 
 export default defineContentScript({
@@ -23,7 +22,6 @@ async function handleSaveSection(message: Message, ctx: InstanceType<typeof Cont
   const ui = await createShadowRootUi(ctx, {
     name: 'save-dialog',
     position: 'modal',
-    zIndex: 9999,
     anchor: 'body',
     onMount: (container) => {
       // Create the Svelte app inside the UI container
