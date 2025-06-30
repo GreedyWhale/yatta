@@ -21,7 +21,7 @@ interface Tag {
   updatedAt: number;     // 标签更新时间
 }
 
-const db = new Dexie('NotesDatabase') as Dexie & {
+const db = new Dexie('YattaDatabase') as Dexie & {
   notes: EntityTable<Note, 'id'>;
   tags: EntityTable<Tag, 'id'>;
 };

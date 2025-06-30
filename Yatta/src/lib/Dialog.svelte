@@ -1,16 +1,17 @@
 <script lang="ts">
-  import type { Message } from "~/types";
+  import type { NoteMessage } from "~/types";
   import type { Tag } from '~/utils/db';
 
-  import { format } from 'date-fns';
+  import { format, getTime } from 'date-fns';
   import { liveQuery } from "dexie";
+  import { nanoid } from 'nanoid';
 
   import { db } from '~/utils/db';
   import deleteIcon from '~/assets/icons/close-line.svg';
 
   interface Props {
-    message: Message;
-    onClose: () => void;
+    message: NoteMessage;
+    onClose: (message?: string) => void;
   }
 
   const { message, onClose }: Props = $props();
@@ -23,7 +24,7 @@
 
   let isOpened = $state(false);
   let inputValue = $state('');
-  let selectedTags = $state<Array<Partial<Tag>>>([]);
+  let selectedTags = $state<(Required<Pick<Tag, "name">> & Partial<Omit<Tag, "name">>)[]>([]);
   const displayTags = $derived.by(() => {
     if (inputValue) {
       return [{ name: inputValue }, ...$tags.filter(tag => tag.name.includes(inputValue))];
@@ -31,6 +32,48 @@
 
     return $tags;
   });
+
+  const onSave = async () => {
+    if (selectedTags.length === 0) {
+      alert('请至少选择一个标签');
+      return;
+    }
+
+    // 过滤重复的标签
+    const uniqueTags = selectedTags.filter((tag, index, self) =>
+      index === self.findIndex(t => t.name === tag.name)
+    );
+
+    const tagsWithoutId = uniqueTags
+      .filter(tag => !tag.id)
+      .map(tag => ({
+        id: nanoid(),
+        name: tag.name,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      }));
+
+    const errorMessage = await Promise.all([
+      db.tags.bulkAdd(tagsWithoutId),
+      db.notes.add({
+        id: nanoid(),
+        ...datasource.payload,
+        tags: uniqueTags.map(tag => tag.name),
+        createdAt: getTime(datasource.createdAt),
+        updatedAt: getTime(datasource.createdAt)
+      })
+    ])
+      .then(() => null)
+      .catch((error) => error.message);
+
+    if (errorMessage) {
+      console.error('保存失败:', errorMessage);
+      alert(`保存失败: ${errorMessage}`);
+      return;
+    }
+
+    onClose('保存成功 !');
+  };
 </script>
 
 <div class="dialog-overlay">
@@ -83,6 +126,7 @@
               type="text"
               placeholder="请选择或输入标签，比如: 灵感, 收藏, 待办"
               class="dialog-tag-input"
+              bind:value={inputValue}
               onfocus={() => isOpened = true}
               onblur={() => isOpened = false}
               oninput={(e) => inputValue = (e.target as HTMLInputElement).value}
@@ -119,12 +163,12 @@
 
       <div class="dialog-footer">
         <button
-          onclick={onClose}
+          onclick={() => onClose()}
           class="dialog-btn-cancel"
         >
-          取消
+          关闭
         </button>
-        <button class="dialog-btn-save">保存</button>
+        <button class="dialog-btn-save" onclick={onSave}>保存</button>
       </div>
     </div>
   </div>
@@ -205,6 +249,8 @@ a.dialog-link:hover {
   color: #8a2be2;
   line-height: 1.75;
   font-style: italic;
+  scrollbar-width: thin;
+  scrollbar-color: #69799d transparent; /* thumb, track */
 }
 
 .dialog-tags {
@@ -226,8 +272,10 @@ a.dialog-link:hover {
   display: flex;
   align-items: center;
   border-radius: 4px;
-  background-color: rgb(211 205 205 / 60%);
-  margin: 2px;
+  background: #f0f0f0;
+  color: #c41d7f;
+  margin-right: 2px;
+  margin-bottom: 2px;
   padding: 4px;
   > button {
     background-color: transparent;
@@ -325,6 +373,18 @@ a.dialog-link:hover {
   transition: background 0.2s;
   &:hover {
     background: rgba(22,163,74,0.18);
+  }
+}
+
+@media (max-width: 1024px) {
+  .dialog-container {
+    width: 60%;
+  }
+}
+
+@media (max-width: 768px) {
+  .dialog-container {
+    width: 90%;
   }
 }
 </style>

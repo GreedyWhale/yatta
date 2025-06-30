@@ -1,4 +1,4 @@
-import type { Message } from '@/types';
+import type { NotificationMessage, NoteMessage } from '@/types';
 
 export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(() => {
@@ -7,6 +7,12 @@ export default defineBackground(() => {
 
   browser.contextMenus.onClicked.addListener(async (...args) => {
     handleSelection(...args);
+  });
+
+  browser.runtime.onMessage.addListener((message: NotificationMessage) => {
+    if (message.id === MESSAGE_ID_NOTIFICATION) {
+      showNotification(message.payload);
+    }
   });
 });
 
@@ -32,8 +38,8 @@ async function handleSelection(info: Browser.contextMenus.OnClickData, tab?: Bro
     return;
   }
 
-  const message: Message = {
-    menuId: MENU_ID_SELECTION,
+  const message: NoteMessage = {
+    id: MENU_ID_SELECTION,
     payload: {
       pageInfo: {
         url: _tab.url || '',

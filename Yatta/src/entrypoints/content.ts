@@ -1,4 +1,4 @@
-import type { Message } from '@/types';
+import type { NoteMessage } from '@/types';
 
 import { mount, unmount } from 'svelte';
 import Dialog from '~/lib/Dialog.svelte';
@@ -8,14 +8,14 @@ export default defineContentScript({
   matches: ['<all_urls>'],
   cssInjectionMode: 'ui',
   main(ctx) {
-    browser.runtime.onMessage.addListener((message: Message) => {
+    browser.runtime.onMessage.addListener((message: NoteMessage) => {
       handleSaveSection(message, ctx)
     });
   },
 });
 
-async function handleSaveSection(message: Message, ctx: InstanceType<typeof ContentScriptContext>) {
-  if (message.menuId !== MENU_ID_SELECTION) {
+async function handleSaveSection(message: NoteMessage, ctx: InstanceType<typeof ContentScriptContext>) {
+  if (message.id !== MENU_ID_SELECTION) {
     return;
   }
 
@@ -29,8 +29,15 @@ async function handleSaveSection(message: Message, ctx: InstanceType<typeof Cont
         target: container,
         props: {
           message,
-          onClose: () => {
+          onClose: (message?: string) => {
             ui.remove();
+
+            if (message) {
+              browser.runtime.sendMessage({
+                id: MESSAGE_ID_NOTIFICATION,
+                payload: message,
+              })
+            }
           }
         }
       });

@@ -1,5 +1,10 @@
 <script lang="ts">
-  console.log(1);
+  import { liveQuery } from "dexie";
+
+  import { db } from '~/utils/db';
+
+  const notes = liveQuery(() => db.notes.toArray());
+  console.log('Notes:', $notes);
 </script>
 
 <main>

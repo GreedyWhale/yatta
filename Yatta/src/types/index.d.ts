@@ -1,9 +1,13 @@
-import { Note } from '~/utils/db';
+import type { Note } from '~/utils/db';
 
-export interface Message {
-  menuId: string | number;
-  payload: Pick<Note, 'pageInfo' | 'content'>;
+export interface Message<T> {
+  id: string | number;
+  payload: T;
 }
+
+export type NoteMessage = Message<Pick<Note, 'pageInfo' | 'content'>>;
+
+export type NotificationMessage = Message<string>;
 
 
 
